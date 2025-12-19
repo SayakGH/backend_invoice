@@ -1,6 +1,7 @@
 const invoiceRepo = require("../repository/invoice.repo");
 const paymentRepo = require("../repository/payments.repo");
 const { COMPANY_MASTER } = require("../constants/companyMaster");
+const generateInvoicePDF = require("../utils/generateInvoicePDF");
 
 // POST /api/v1/invoices/create
 exports.createInvoice = async (req, res) => {
@@ -89,5 +90,32 @@ exports.updateInvoice = async (req, res) => {
   } catch (err) {
     console.error("Invoice Update error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.generatePDF = async (req, res) => {
+  try {
+    const invoiceId = req.params.id;
+
+    // Fetch invoice from DB
+    const invoice = await invoiceRepo.getInvoiceById(invoiceId);
+
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    // Generate PDF using invoice object
+    const pdf = await generateInvoicePDF(invoice);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Invoice_${invoice._id}.pdf`
+    );
+
+    res.send(pdf);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "PDF generation failed" });
   }
 };

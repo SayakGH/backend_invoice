@@ -94,8 +94,28 @@ const updateInvoicePayment = async (id, amount) => {
   }
 };
 
+const getInvoiceById = async (id) => {
+  const params = {
+    TableName: TABLE_NAME,
+    Key: {
+      _id: id,
+    },
+  };
+
+  try {
+    const command = new GetCommand(params);
+    const result = await dynamoDB.send(command);
+
+    // If no item exists, return null
+    return result.Item || null;
+  } catch (err) {
+    throw new Error(`DynamoDB Get Error: ${err.message}`);
+  }
+};
+
 module.exports = {
   createInvoice,
   getAllInvoices,
   updateInvoicePayment,
+  getInvoiceById,
 };
