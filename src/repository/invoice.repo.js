@@ -12,17 +12,20 @@ const TABLE_NAME = "Invoice_app_invoices";
 
 const createInvoice = async (invoiceData) => {
   const newId = generateInvoiceId();
+
+  // Convert to IST
+  const now = new Date();
+  const istDate = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+
   const newInvoice = {
     _id: newId,
-    createdAt: new Date().toISOString(),
+    createdAt: istDate.toISOString(), // IST stored as ISO string
     ...invoiceData,
   };
 
   const params = {
     TableName: TABLE_NAME,
     Item: newInvoice,
-    // "attribute_not_exists" ensures we don't overwrite an ID.
-    // We use #id alias because _id contains special char in some contexts
     ConditionExpression: "attribute_not_exists(#id)",
     ExpressionAttributeNames: {
       "#id": "_id",

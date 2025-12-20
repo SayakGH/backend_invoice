@@ -14,13 +14,17 @@ const createPayment = async ({
 }) => {
   const paymentId = uuidv4();
 
+  // Convert to IST (UTC + 5:30)
+  const now = new Date();
+  const istDate = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+
   const newPayment = {
     _id: paymentId,
     customerName,
     invoiceId,
     amount,
     paymentMode,
-    createdAt: new Date().toISOString(),
+    createdAt: istDate.toISOString(), // IST stored as ISO
   };
 
   // Add cheque details only if mode is Cheque
