@@ -42,22 +42,15 @@ exports.createInvoice = async (req, res) => {
   }
 };
 
-// GET /api/v1/invoices?limit=10&cursor=xxxxx
+// GET /api/v1/invoices
 exports.getAllInvoices = async (req, res) => {
   try {
-    const limit = Number(req.query.limit) || 10;
-    const cursor = req.query.cursor || null;
-
-    const { invoices, nextCursor } = await invoiceRepo.getAllInvoices({
-      limit,
-      cursor,
-    });
+    const invoices = await invoiceRepo.getAllInvoices();
 
     res.status(200).json({
       success: true,
       count: invoices.length,
       invoices,
-      nextCursor, // 🔑 important
     });
   } catch (err) {
     console.error("Get Invoices Error:", err);

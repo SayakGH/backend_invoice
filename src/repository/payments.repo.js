@@ -49,7 +49,7 @@ const createPayment = async ({
   }
 };
 
-const getAllPayments = async ({ limit = 10, cursor = null }) => {
+const getAllPayments = async ({ limit = 20, cursor = null, search = "" }) => {
   const params = {
     TableName: PAYMENT_TABLE,
     Limit: limit,
@@ -61,25 +61,48 @@ const getAllPayments = async ({ limit = 10, cursor = null }) => {
     );
   }
 
-  try {
-    const command = new ScanCommand(params);
-    const result = await dynamoDB.send(command);
+  if (search && search.trim() !== "") {
+    params.FilterExpression = `
+      contains(#pid, :s) OR
+      contains(invoiceId, :s)
+    `;
 
-    const payments = (result.Items || []).sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-
-    return {
-      payments,
-      nextCursor: result.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
-            "base64"
-          )
-        : null,
+    params.ExpressionAttributeNames = {
+      "#pid": "_id",
     };
-  } catch (err) {
-    throw new Error(`DynamoDB Fetch Payments Error: ${err.message}`);
+
+    params.ExpressionAttributeValues = {
+      ":s": search,
+    };
   }
+
+  const command = new ScanCommand(params);
+  const result = await dynamoDB.send(command);
+
+  const sortedPayments = (result.Items || []).sort((a, b) => {
+    // Extract DATE part (YYYY-MM-DD)
+    const dateA = a.createdAt.split("T")[0];
+    const dateB = b.createdAt.split("T")[0];
+
+    if (dateA !== dateB) {
+      // 🔹 Sort by DATE (latest first)
+      return dateB.localeCompare(dateA);
+    }
+
+    // If DATE is same, compare TIME (HH:mm:ss.sss)
+    const timeA = a.createdAt.split("T")[1];
+    const timeB = b.createdAt.split("T")[1];
+
+    // 🔹 Sort by TIME (latest first)
+    return timeB.localeCompare(timeA);
+  });
+
+  return {
+    payments: sortedPayments,
+    nextCursor: result.LastEvaluatedKey
+      ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString("base64")
+      : null,
+  };
 };
 
 module.exports = {

@@ -12,19 +12,17 @@ const TABLE_NAME = "Invoice_app_invoices";
 
 const createInvoice = async (invoiceData) => {
   const newId = generateInvoiceId();
-
-  const now = new Date();
-  const istDate = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
-
   const newInvoice = {
     _id: newId,
-    createdAt: istDate.toISOString(), // IST stored
+    createdAt: new Date().toISOString(),
     ...invoiceData,
   };
 
   const params = {
     TableName: TABLE_NAME,
     Item: newInvoice,
+    // "attribute_not_exists" ensures we don't overwrite an ID.
+    // We use #id alias because _id contains special char in some contexts
     ConditionExpression: "attribute_not_exists(#id)",
     ExpressionAttributeNames: {
       "#id": "_id",
@@ -40,36 +38,31 @@ const createInvoice = async (invoiceData) => {
   }
 };
 
-const getAllInvoices = async ({ limit = 10, cursor = null }) => {
+const getAllInvoices = async () => {
   const params = {
     TableName: TABLE_NAME,
-    Limit: limit,
   };
-
-  // If cursor exists, decode and set ExclusiveStartKey
-  if (cursor) {
-    params.ExclusiveStartKey = JSON.parse(
-      Buffer.from(cursor, "base64").toString("utf-8")
-    );
-  }
 
   try {
     const command = new ScanCommand(params);
     const result = await dynamoDB.send(command);
 
-    // Sort latest first (DESC)
-    const invoices = (result.Items || []).sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
+    // Sort by createdAt DESC (latest first)
+    const sortedInvoices = (result.Items || []).sort((a, b) => {
+      const dateA = a.createdAt.split("T")[0];
+      const dateB = b.createdAt.split("T")[0];
 
-    return {
-      invoices,
-      nextCursor: result.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
-            "base64"
-          )
-        : null,
-    };
+      if (dateA !== dateB) {
+        return dateB.localeCompare(dateA); // latest date first
+      }
+
+      const timeA = a.createdAt.split("T")[1];
+      const timeB = b.createdAt.split("T")[1];
+
+      return timeB.localeCompare(timeA); // latest time first
+    });
+
+    return sortedInvoices;
   } catch (err) {
     throw new Error(`DynamoDB Fetch Error: ${err.message}`);
   }
