@@ -14,13 +14,16 @@ const createPayment = async ({
 }) => {
   const paymentId = uuidv4();
 
+  const now = new Date();
+  const istDate = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+
   const newPayment = {
     _id: paymentId,
     customerName,
     invoiceId,
     amount,
     paymentMode,
-    createdAt: new Date().toISOString(),
+    createdAt: istDate.toISOString(),
   };
 
   // Add cheque details only if mode is Cheque
@@ -46,10 +49,17 @@ const createPayment = async ({
   }
 };
 
-const getAllPayments = async () => {
+const getAllPayments = async ({ limit = 10, cursor = null }) => {
   const params = {
     TableName: PAYMENT_TABLE,
+    Limit: limit,
   };
+
+  if (cursor) {
+    params.ExclusiveStartKey = JSON.parse(
+      Buffer.from(cursor, "base64").toString("utf-8")
+    );
+  }
 
   try {
     const command = new ScanCommand(params);
@@ -59,7 +69,14 @@ const getAllPayments = async () => {
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
 
-    return payments;
+    return {
+      payments,
+      nextCursor: result.LastEvaluatedKey
+        ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
+            "base64"
+          )
+        : null,
+    };
   } catch (err) {
     throw new Error(`DynamoDB Fetch Payments Error: ${err.message}`);
   }
