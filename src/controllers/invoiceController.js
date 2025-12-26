@@ -1,7 +1,6 @@
 const invoiceRepo = require("../repository/invoice.repo");
 const paymentRepo = require("../repository/payments.repo");
 const { COMPANY_MASTER } = require("../constants/companyMaster");
-const generateInvoicePDF = require("../utils/generateInvoicePDF");
 
 // POST /api/v1/invoices/create
 exports.createInvoice = async (req, res) => {
@@ -93,29 +92,34 @@ exports.updateInvoice = async (req, res) => {
   }
 };
 
-exports.generatePDF = async (req, res) => {
+// DELETE /api/v1/invoices/:id
+exports.deleteInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.id;
 
-    // Fetch invoice from DB
-    const invoice = await invoiceRepo.getInvoiceById(invoiceId);
-
-    if (!invoice) {
-      return res.status(404).json({ message: "Invoice not found" });
+    if (!invoiceId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice ID is required",
+      });
     }
 
-    // Generate PDF using invoice object
-    const pdf = await generateInvoicePDF(invoice);
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=Invoice_${invoice._id}.pdf`
+    const paymentDeleteResult = await paymentRepo.deletePaymentsByInvoiceId(
+      invoiceId
     );
 
-    res.send(pdf);
+    const invoiceDeleteResult = await invoiceRepo.deleteInvoiceById(invoiceId);
+
+    res.status(200).json({
+      success: true,
+      message: "Invoice and related payments deleted successfully",
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "PDF generation failed" });
+    console.error("Delete Invoice Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };

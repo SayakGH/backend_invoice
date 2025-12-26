@@ -1,27 +1,27 @@
 const COMPANY_MASTER = {
   "Airde Real Estate": {
     name: "Airde Real Estate",
-    address: "123, Tech Park, Sector 62, Noida, UP - 201301",
-    phone: "+91 98765 43210",
-    email: "contact@airderealestate.com",
+    address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
+    phone: "033-45025892",
+    email: "airdegroup@gmail.com/India@airde.in",
   },
   "Airde Developers": {
     name: "Airde Developers",
-    address: "45, Business Hub, MG Road, Bengaluru, KA - 560001",
-    phone: "+91 91234 56789",
-    email: "support@airdedevelopers.com",
+    address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
+    phone: "033-45025892",
+    email: "airdegroup@gmail.com/India@airde.in",
   },
-  "Sora Realtors": {
-    name: "Sora Realtors",
-    address: "78, Skyline Towers, Banjara Hills, Hyderabad, TS - 500034",
-    phone: "+91 99887 66554",
-    email: "info@sorarealtors.com",
+  "Sora Realtor": {
+    name: "Sora Realtor",
+    address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
+    phone: "033-45025892",
+    email: "airdegroup@gmail.com/India@airde.in",
   },
   "Unique Realcon": {
     name: "Unique Realcon",
-    address: "10, Infinity Plaza, Salt Lake, Kolkata, WB - 700091",
-    phone: "+91 90000 11122",
-    email: "sales@uniquerealcon.com",
+    address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
+    phone: "033-45025892",
+    email: "airdegroup@gmail.com/India@airde.in",
   },
 };
 

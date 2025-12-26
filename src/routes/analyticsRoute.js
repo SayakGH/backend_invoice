@@ -1,7 +1,12 @@
 const router = require("express").Router();
-const { getAnalytics } = require("../controllers/analyticsController");
+const {
+  getAnalytics,
+  getAnalyticsSummary,
+} = require("../controllers/analyticsController");
 const auth = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
 router.get("/", auth, authorizeRoles("admin"), getAnalytics);
+router.get("/summary", auth, authorizeRoles("admin"), getAnalyticsSummary);
+
 module.exports = router;

@@ -1,4 +1,5 @@
 const analyticsRepo = require("../repository/analytics.repo");
+const paymentsRepo = require("../repository/payments.repo");
 const { COMPANY_MASTER } = require("../constants/companyMaster");
 
 // GET /api/v1/analytics
@@ -13,5 +14,28 @@ exports.getAnalytics = async (req, res) => {
   } catch (err) {
     console.error("Analytics error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// GET /api/v1/analytics/summary
+exports.getAnalyticsSummary = async (req, res) => {
+  try {
+    const last30DaysPayments =
+      await paymentsRepo.getLast30DaysPaymentsSummary();
+
+    res.status(200).json({
+      success: true,
+      analytics: {
+        last30DaysPayments,
+      },
+    });
+  } catch (err) {
+    console.error("Analytics Controller Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch analytics",
+      error: err.message,
+    });
   }
 };

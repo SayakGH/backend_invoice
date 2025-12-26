@@ -2,6 +2,10 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const authMiddleware = (req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+
   const header = req.headers.authorization;
 
   if (!header || !header.startsWith("Bearer ")) {
@@ -12,9 +16,6 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Attach decoded info (id, role) to request
-    // Ensure your generateToken function uses 'id' or '_id' in the payload
     req.user = decoded;
     next();
   } catch (err) {

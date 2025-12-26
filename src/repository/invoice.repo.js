@@ -116,9 +116,44 @@ const getInvoiceById = async (id) => {
   }
 };
 
+const deleteInvoiceById = async (id) => {
+  if (!id) {
+    throw new Error("Invoice ID is required");
+  }
+
+  const params = {
+    TableName: TABLE_NAME,
+    Key: {
+      _id: id,
+    },
+    ConditionExpression: "attribute_exists(#id)",
+    ExpressionAttributeNames: {
+      "#id": "_id",
+    },
+    ReturnValues: "ALL_OLD",
+  };
+
+  try {
+    const command = new DeleteCommand(params);
+    const result = await dynamoDB.send(command);
+
+    return {
+      message: "Invoice deleted successfully",
+      deletedInvoice: result.Attributes,
+    };
+  } catch (err) {
+    if (err.name === "ConditionalCheckFailedException") {
+      throw new Error("Invoice not found");
+    }
+
+    throw new Error(`DynamoDB Delete Invoice Error: ${err.message}`);
+  }
+};
+
 module.exports = {
   createInvoice,
   getAllInvoices,
   updateInvoicePayment,
   getInvoiceById,
+  deleteInvoiceById,
 };

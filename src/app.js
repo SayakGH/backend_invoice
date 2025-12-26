@@ -5,19 +5,21 @@ const userRoutes = require("./routes/userRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const analyticsRoutes = require("./routes/analyticsRoute");
 const paymentRoutes = require("./routes/paymentRoute");
+require("dotenv").config();
 
 const app = express();
-// CORS FIX
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json());
-
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);

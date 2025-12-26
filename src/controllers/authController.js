@@ -123,3 +123,41 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+const jwt = require("jsonwebtoken");
+
+/**
+ * GET /api/v1/auth/validate
+ * Checks whether JWT token is valid
+ */
+exports.validateToken = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({
+          success: false,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+      });
+    });
+  } catch (err) {
+    console.error("Token validation error:", err);
+
+    res.status(500).json({
+      success: false,
+    });
+  }
+};
