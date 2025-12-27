@@ -1,10 +1,4 @@
-const {
-  GetCommand,
-  PutCommand,
-  ScanCommand,
-  DeleteCommand,
-  UpdateCommand,
-} = require("@aws-sdk/lib-dynamodb");
+const { ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const { dynamoDB } = require("../config/dynamo");
 
 const TABLE_NAME = "Invoice_app_invoices";

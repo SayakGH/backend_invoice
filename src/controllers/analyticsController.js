@@ -1,11 +1,11 @@
 const analyticsRepo = require("../repository/analytics.repo");
 const paymentsRepo = require("../repository/payments.repo");
-const { COMPANY_MASTER } = require("../constants/companyMaster");
+const invoiceRepo = require("../repository/invoice.repo");
 
 // GET /api/v1/analytics
 exports.getAnalytics = async (req, res) => {
   try {
-    const analyticsData = await analyticsRepo.analytics();
+    const analyticsData = await invoiceRepo.analytics();
 
     res.status(200).json({
       success: true,

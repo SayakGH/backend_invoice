@@ -8,5 +8,5 @@ const auth = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
 router.get("/", auth, authorizeRoles("admin"), getPayments);
-router.get("/:id", auth, authorizeRoles("admin"), getLatestPayment);
+router.get("/:id", auth, getLatestPayment);
 module.exports = router;

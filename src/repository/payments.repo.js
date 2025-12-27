@@ -31,7 +31,7 @@ const createPayment = async ({
     invoiceId,
     amount,
     paymentMode,
-    createdAt: istDate.toISOString(), // IST stored as ISO
+    createdAt: istDate.toISOString(),
   };
 
   // Add cheque details only if mode is Cheque

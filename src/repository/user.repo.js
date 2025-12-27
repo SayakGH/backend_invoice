@@ -11,17 +11,22 @@ const { dynamoDB } = require("../config/dynamo"); // Ensure this matches your co
 
 const TABLE_NAME = "Invoice_app_users"; // Ensure this matches your AWS Table Name
 
-// 1. FIND BY ID (Fast - For Login)
-// Uses Primary Key Lookup
 const findUserById = async (id) => {
+  // 🔥 Hard guard – prevents DynamoDB from ever crashing
+  if (!id || typeof id !== "string") {
+    console.error("🚨 findUserById called with invalid id:", id);
+    return null;
+  }
+
   const params = {
     TableName: TABLE_NAME,
     Key: { _id: id },
   };
+
   try {
     const command = new GetCommand(params);
     const response = await dynamoDB.send(command);
-    return response.Item;
+    return response.Item || null;
   } catch (err) {
     throw new Error(`DynamoDB FindById Error: ${err.message}`);
   }
