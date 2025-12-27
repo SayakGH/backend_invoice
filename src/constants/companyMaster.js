@@ -3,25 +3,25 @@ const COMPANY_MASTER = {
     name: "Airde Real Estate",
     address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
     phone: "033-45025892",
-    email: "airdegroup@gmail.com/India@airde.in",
+    email: "airdegroup@gmail.com/india@airde.in",
   },
   "Airde Developer": {
     name: "Airde Developer",
     address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
     phone: "033-45025892",
-    email: "airdegroup@gmail.com/India@airde.in",
+    email: "airdegroup@gmail.com/india@airde.in",
   },
   "Sora Realtor": {
     name: "Sora Realtor",
     address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
     phone: "033-45025892",
-    email: "airdegroup@gmail.com/India@airde.in",
+    email: "airdegroup@gmail.com/india@airde.in",
   },
   "Unique Realcon": {
     name: "Unique Realcon",
     address: "3002, EB-46, Rajdanga Main Road,  Kolkata- 700107",
     phone: "033-45025892",
-    email: "airdegroup@gmail.com/India@airde.in",
+    email: "airdegroup@gmail.com/india@airde.in",
   },
 };
 
