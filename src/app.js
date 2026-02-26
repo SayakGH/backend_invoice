@@ -9,6 +9,15 @@ require("dotenv").config();
 
 const app = express();
 
+// app.use(
+//   cors({
+//     origin: "*",
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   }),
+// );
+app.use(express.json());
+
 app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
@@ -16,7 +25,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });

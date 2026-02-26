@@ -6,6 +6,8 @@ const {
   deleteInvoice,
   getMyInvoices,
   getInvoiceHistory,
+  updateInvoicePhone,
+  updateInvoicePAN,
 } = require("../controllers/invoiceController");
 const auth = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
@@ -13,6 +15,13 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 router.post("/create", auth, createInvoice);
 router.get("/", auth, authorizeRoles("admin"), getAllInvoices);
 router.put("/update/:id", auth, updateInvoice);
+router.put(
+  "/update-phone/:id",
+  auth,
+  authorizeRoles("admin"),
+  updateInvoicePhone
+);
+router.put("/update-pan/:id", auth, authorizeRoles("admin"), updateInvoicePAN);
 router.get("/user", auth, authorizeRoles("user"), getMyInvoices);
 router.get("/history/:id", auth, getInvoiceHistory);
 router.delete("/:id", auth, authorizeRoles("admin"), deleteInvoice);

@@ -67,7 +67,7 @@ const getAllPayments = async () => {
     const result = await dynamoDB.send(command);
 
     const payments = (result.Items || []).sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
 
     return payments;
@@ -183,8 +183,8 @@ const deletePaymentsByInvoiceId = async (invoiceId) => {
           Key: {
             _id: payment._id,
           },
-        })
-      )
+        }),
+      ),
     );
 
     await Promise.all(deletePromises);
@@ -195,7 +195,7 @@ const deletePaymentsByInvoiceId = async (invoiceId) => {
     };
   } catch (err) {
     throw new Error(
-      `DynamoDB Delete Payments by Invoice Error: ${err.message}`
+      `DynamoDB Delete Payments by Invoice Error: ${err.message}`,
     );
   }
 };
@@ -230,7 +230,7 @@ const getLatestPaymentByInvoiceId = async (invoiceId) => {
     ================================= */
 
     const latestPayment = payments.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     )[0];
 
     return latestPayment;
@@ -239,10 +239,20 @@ const getLatestPaymentByInvoiceId = async (invoiceId) => {
   }
 };
 
+const deletePaymentById = async (paymentId) => {
+  await dynamoDB.send(
+    new DeleteCommand({
+      TableName: PAYMENTS_TABLE,
+      Key: { paymentId },
+    }),
+  );
+};
+
 module.exports = {
   createPayment,
   getAllPayments,
   getLast30DaysPaymentsSummary,
   deletePaymentsByInvoiceId,
   getLatestPaymentByInvoiceId,
+  deletePaymentById,
 };

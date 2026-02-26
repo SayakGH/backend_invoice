@@ -65,12 +65,12 @@ const getInvoicesByExecutiveName = async (executiveName) => {
 
     // Latest = those NOT referenced by any previousInvoiceId
     const latestInvoices = invoices.filter(
-      (inv) => !referencedIds.has(inv._id)
+      (inv) => !referencedIds.has(inv._id),
     );
 
     // Sort newest first
     latestInvoices.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
 
     return latestInvoices;
@@ -100,12 +100,12 @@ const getAllInvoices = async () => {
 
     // Latest invoices = invoices NOT referenced by any previousInvoiceId
     const latestInvoices = invoices.filter(
-      (inv) => !referencedIds.has(inv._id)
+      (inv) => !referencedIds.has(inv._id),
     );
 
     // Sort by latest creation time DESC (nice for UI)
     latestInvoices.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
 
     return latestInvoices;
@@ -119,7 +119,7 @@ const updateInvoicePayment = async (
   amount,
   paymentMode,
   chequeNumber,
-  bankName
+  bankName,
 ) => {
   try {
     /* 1️⃣ Fetch original invoice */
@@ -309,7 +309,7 @@ const analytics = async () => {
 
     // Latest invoices only
     const latestInvoices = invoices.filter(
-      (inv) => !referencedIds.has(inv._id)
+      (inv) => !referencedIds.has(inv._id),
     );
 
     let totalPaid = 0;
@@ -329,9 +329,114 @@ const analytics = async () => {
     throw new Error(`DynamoDB Analytics Error: ${err.message}`);
   }
 };
+const isLatestInvoice = async (invoiceId) => {
+  const params = { TableName: TABLE_NAME };
+  const result = await dynamoDB.send(new ScanCommand(params));
+
+  const invoices = result.Items || [];
+
+  // If any invoice points to this one as previous → not latest
+  return !invoices.some((inv) => inv.previousInvoiceId === invoiceId);
+};
+const updateInvoiceCustomerPhone = async (invoiceId, newPhone) => {
+  try {
+    if (!newPhone) throw new Error("Phone is required");
+
+    const latest = await isLatestInvoice(invoiceId);
+    if (!latest) {
+      throw new Error("Cannot update phone on an old invoice version");
+    }
+
+    const params = {
+      TableName: TABLE_NAME,
+      Key: { _id: invoiceId },
+      UpdateExpression: "SET #c.#phone = :phone",
+      ExpressionAttributeNames: {
+        "#c": "customer",
+        "#phone": "phone",
+      },
+      ExpressionAttributeValues: {
+        ":phone": String(newPhone),
+      },
+      ReturnValues: "ALL_NEW",
+    };
+
+    const result = await dynamoDB.send(new UpdateCommand(params));
+    return result.Attributes;
+  } catch (err) {
+    throw new Error(`Update Phone Error: ${err.message}`);
+  }
+};
+const updateInvoiceCustomerPAN = async (invoiceId, newPAN) => {
+  try {
+    if (!newPAN) throw new Error("PAN is required");
+
+    const latest = await isLatestInvoice(invoiceId);
+    if (!latest) {
+      throw new Error("Cannot update PAN on an old invoice version");
+    }
+
+    const params = {
+      TableName: TABLE_NAME,
+      Key: { _id: invoiceId },
+      UpdateExpression: "SET #c.#PAN = :pan",
+      ExpressionAttributeNames: {
+        "#c": "customer",
+        "#PAN": "PAN",
+      },
+      ExpressionAttributeValues: {
+        ":pan": newPAN.toUpperCase(),
+      },
+      ReturnValues: "ALL_NEW",
+    };
+
+    const result = await dynamoDB.send(new UpdateCommand(params));
+    return result.Attributes;
+  } catch (err) {
+    throw new Error(`Update PAN Error: ${err.message}`);
+  }
+};
+
+const getFullInvoiceChain = async (latestInvoiceId) => {
+  try {
+    const params = { TableName: TABLE_NAME };
+    const result = await dynamoDB.send(new ScanCommand(params));
+
+    const invoices = result.Items || [];
+
+    // Build lookup map
+    const map = {};
+    for (const inv of invoices) {
+      map[inv._id] = inv;
+    }
+
+    const chain = [];
+
+    let current = map[latestInvoiceId];
+    if (!current) return [];
+
+    // include latest first
+    chain.push(current);
+
+    let prevId = current.previousInvoiceId;
+
+    while (prevId) {
+      const inv = map[prevId];
+      if (!inv) break;
+
+      chain.push(inv);
+      prevId = inv.previousInvoiceId;
+    }
+
+    return chain;
+  } catch (err) {
+    throw new Error(`Invoice Chain Fetch Error: ${err.message}`);
+  }
+};
 
 module.exports = {
   createInvoice,
+  getFullInvoiceChain,
   getAllInvoices,
   updateInvoicePayment,
   getInvoiceById,
@@ -339,4 +444,6 @@ module.exports = {
   getInvoicesByExecutiveName,
   getPreviousInvoiceHistory,
   analytics,
+  updateInvoiceCustomerPhone,
+  updateInvoiceCustomerPAN,
 };
